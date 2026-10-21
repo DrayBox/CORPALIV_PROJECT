@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Solo para el tema XML de la ventana (evita un destello blanco al abrir).
+         Los colores de la interfaz viven en ui/theme/Color.kt -->
+    <color name="corpaliv_background">#FFFBF9FF</color>
+</resources>
