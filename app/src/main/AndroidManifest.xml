@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Recursos nativos: se piden en tiempo de ejecución, solo cuando el usuario los usa -->
+    <!-- Cámara: foto de perfil -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Ubicación aproximada (no precisa): basta para la sede más cercana -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- required=false: la app se puede instalar en equipos sin cámara o sin GPS -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+
+    <!-- Sin respaldos: la base local guarda hashes de claves y no debe salir del teléfono.
+         allowBackup y fullBackupContent cubren Android 8 a 11; data_extraction_rules, Android 12 en adelante -->
+
+    <application
+        android:name=".CorpalivApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CORPALIV">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.CORPALIV"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
