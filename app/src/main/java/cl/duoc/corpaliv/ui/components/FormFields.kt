@@ -141,7 +141,8 @@ fun DateField(
     error: String?,
     modifier: Modifier = Modifier,
     soloPasadas: Boolean = false,
-    soloFuturas: Boolean = false
+    soloFuturas: Boolean = false,
+    supportingHint: String? = null
 ) {
     var mostrarDialogo by rememberSaveable { mutableStateOf(false) }
     val interaction = remember { MutableInteractionSource() }
@@ -162,7 +163,7 @@ fun DateField(
         leadingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null) },
         trailingIcon = { FieldStatusIcon(error = error, hasValue = value != null) },
         isError = error != null,
-        supportingText = error?.let { texto -> { Text(texto) } },
+        supportingText = (error ?: supportingHint)?.let { texto -> { Text(texto) } },
         interactionSource = interaction,
         singleLine = true,
         shape = MaterialTheme.shapes.small,

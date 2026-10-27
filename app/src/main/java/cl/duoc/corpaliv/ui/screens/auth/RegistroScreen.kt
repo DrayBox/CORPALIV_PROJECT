@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Badge
-import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
@@ -108,23 +107,15 @@ fun RegistroScreen(
                 modifier = Modifier.shakeOnError(state.intentoFallido, state.emailError != null),
                 keyboardType = KeyboardType.Email
             )
-            CorpalivTextField(
-                value = state.edad,
-                onValueChange = viewModel::onEdadChange,
-                label = "Edad",
-                leadingIcon = Icons.Outlined.Cake,
-                error = state.edadError,
-                modifier = Modifier.shakeOnError(state.intentoFallido, state.edadError != null),
-                keyboardType = KeyboardType.Number,
-                supportingHint = "Mínimo ${Validators.EDAD_MINIMA} años"
-            )
             DateField(
                 value = state.fechaNacimiento,
                 onValueChange = viewModel::onFechaChange,
                 label = "Fecha de nacimiento",
                 error = state.fechaError,
                 modifier = Modifier.shakeOnError(state.intentoFallido, state.fechaError != null),
-                soloPasadas = true
+                soloPasadas = true,
+                // La edad se calcula sola y se muestra bajo la fecha
+                supportingHint = state.edad?.let { "Tienes $it años" } ?: "Mínimo ${Validators.EDAD_MINIMA} años"
             )
             PasswordTextField(
                 value = state.clave,

@@ -44,35 +44,17 @@ object Validators {
         }
     }
 
-    // La edad llega como texto desde el campo; se valida que sea un Int en rango
-    fun edad(valor: String): String? {
-        val numero = valor.trim().toIntOrNull()
-        return when {
-            valor.isBlank() -> "Ingresa tu edad"
-            numero == null -> "La edad debe ser un número entero"
-            numero < EDAD_MINIMA -> "Debes tener al menos $EDAD_MINIMA años"
-            numero > EDAD_MAXIMA -> "Ingresa una edad válida"
-            else -> null
-        }
-    }
+    // La edad no se escribe: se calcula (Int) a partir de la fecha de nacimiento
+    fun edadDesde(fecha: LocalDate, hoy: LocalDate = LocalDate.now()): Int =
+        Period.between(fecha, hoy).years
 
     // hoy se recibe como parámetro para poder probar con una fecha fija
     fun fechaNacimiento(fecha: LocalDate?, hoy: LocalDate = LocalDate.now()): String? = when {
         fecha == null -> "Selecciona tu fecha de nacimiento"
         fecha.isAfter(hoy) -> "La fecha no puede ser futura"
-        Period.between(fecha, hoy).years < EDAD_MINIMA -> "Debes tener al menos $EDAD_MINIMA años"
+        edadDesde(fecha, hoy) < EDAD_MINIMA -> "Debes tener al menos $EDAD_MINIMA años"
+        edadDesde(fecha, hoy) > EDAD_MAXIMA -> "Ingresa una fecha de nacimiento válida"
         else -> null
-    }
-
-    // Cruza los dos campos: la edad escrita debe calzar con la fecha elegida
-    fun edadCoincideConFecha(edad: String, fecha: LocalDate?, hoy: LocalDate = LocalDate.now()): String? {
-        val numero = edad.trim().toIntOrNull() ?: return null
-        if (fecha == null) return null
-        return if (Period.between(fecha, hoy).years != numero) {
-            "La edad no coincide con la fecha de nacimiento"
-        } else {
-            null
-        }
     }
 
     fun clave(valor: String): String? = when {

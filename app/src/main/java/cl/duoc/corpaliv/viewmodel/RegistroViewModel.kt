@@ -17,7 +17,6 @@ import java.time.LocalDate
 data class RegistroUiState(
     val nombre: String = "",
     val email: String = "",
-    val edad: String = "",
     val fechaNacimiento: LocalDate? = null,
     val tipoCuenta: TipoCuenta = TipoCuenta.PERSONA,
     val clave: String = "",
@@ -26,7 +25,6 @@ data class RegistroUiState(
     val newsletter: Boolean = false,
     val nombreError: String? = null,
     val emailError: String? = null,
-    val edadError: String? = null,
     val fechaError: String? = null,
     val claveError: String? = null,
     val confirmacionError: String? = null,
@@ -36,8 +34,12 @@ data class RegistroUiState(
     val intentoFallido: Int = 0,
     val exito: Boolean = false
 ) {
+    // La edad no se escribe: se calcula desde la fecha de nacimiento
+    val edad: Int?
+        get() = fechaNacimiento?.let { Validators.edadDesde(it) }
+
     val tieneErrores: Boolean
-        get() = listOf(nombreError, emailError, edadError, fechaError, claveError, confirmacionError, terminosError)
+        get() = listOf(nombreError, emailError, fechaError, claveError, confirmacionError, terminosError)
             .any { it != null }
 }
 
@@ -54,20 +56,8 @@ class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel()
     fun onEmailChange(valor: String) =
         _uiState.update { it.copy(email = valor, emailError = Validators.email(valor)) }
 
-    fun onEdadChange(valor: String) {
-        // Solo dígitos, máximo 3
-        val limpio = valor.filter { it.isDigit() }.take(3)
-        _uiState.update { it.copy(edad = limpio, edadError = errorEdad(limpio, it.fechaNacimiento)) }
-    }
-
-    fun onFechaChange(fecha: LocalDate) = _uiState.update {
-        it.copy(
-            fechaNacimiento = fecha,
-            fechaError = Validators.fechaNacimiento(fecha),
-            // La edad depende de la fecha: se revalida si ya se escribió
-            edadError = if (it.edad.isNotEmpty()) errorEdad(it.edad, fecha) else it.edadError
-        )
-    }
+    fun onFechaChange(fecha: LocalDate) =
+        _uiState.update { it.copy(fechaNacimiento = fecha, fechaError = Validators.fechaNacimiento(fecha)) }
 
     fun onTipoCuentaChange(tipo: TipoCuenta) = _uiState.update { it.copy(tipoCuenta = tipo) }
 
@@ -95,7 +85,6 @@ class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel()
             it.copy(
                 nombreError = Validators.nombre(it.nombre),
                 emailError = Validators.email(it.email),
-                edadError = errorEdad(it.edad, it.fechaNacimiento),
                 fechaError = Validators.fechaNacimiento(it.fechaNacimiento),
                 claveError = Validators.clave(it.clave),
                 confirmacionError = Validators.confirmacionClave(it.clave, it.confirmacion),
@@ -113,7 +102,7 @@ class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel()
             val usuario = Usuario(
                 nombre = estado.nombre.trim(),
                 email = estado.email.trim(),
-                edad = estado.edad.toInt(),
+                edad = requireNotNull(estado.edad),
                 fechaNacimiento = requireNotNull(estado.fechaNacimiento),
                 tipoCuenta = estado.tipoCuenta,
                 aceptaNewsletter = estado.newsletter
@@ -126,7 +115,4 @@ class RegistroViewModel(private val repository: UsuarioRepository) : ViewModel()
             }
         }
     }
-
-    private fun errorEdad(edad: String, fecha: LocalDate?): String? =
-        Validators.edad(edad) ?: Validators.edadCoincideConFecha(edad, fecha)
 }

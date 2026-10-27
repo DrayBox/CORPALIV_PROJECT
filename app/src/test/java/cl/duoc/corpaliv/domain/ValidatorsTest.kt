@@ -30,26 +30,19 @@ class ValidatorsTest {
     }
 
     @Test
-    fun edad_debeSerEnteroEnRango() {
-        assertNull(Validators.edad("30"))
-        assertEquals("La edad debe ser un número entero", Validators.edad("3o"))
-        assertNotNull(Validators.edad("17"))
-        assertNotNull(Validators.edad("150"))
+    fun edad_seCalculaDesdeLaFecha() {
+        assertEquals(30, Validators.edadDesde(LocalDate.of(1996, 1, 10), hoy))
+        // Todavía no cumple años este año
+        assertEquals(29, Validators.edadDesde(LocalDate.of(1996, 12, 1), hoy))
     }
 
     @Test
-    fun fechaNacimiento_futuraOMenorDeEdad_daError() {
+    fun fechaNacimiento_futuraMenorDeEdadOFueraDeRango_daError() {
         assertNull(Validators.fechaNacimiento(LocalDate.of(1996, 1, 10), hoy))
         assertEquals("La fecha no puede ser futura", Validators.fechaNacimiento(hoy.plusDays(1), hoy))
-        assertNotNull(Validators.fechaNacimiento(LocalDate.of(2012, 5, 1), hoy))
+        assertEquals("Debes tener al menos 18 años", Validators.fechaNacimiento(LocalDate.of(2012, 5, 1), hoy))
+        assertEquals("Ingresa una fecha de nacimiento válida", Validators.fechaNacimiento(LocalDate.of(1900, 1, 1), hoy))
         assertNotNull(Validators.fechaNacimiento(null, hoy))
-    }
-
-    @Test
-    fun edad_debeCoincidirConFecha() {
-        val fecha = LocalDate.of(1996, 1, 10) // 30 años al 16/10/2026
-        assertNull(Validators.edadCoincideConFecha("30", fecha, hoy))
-        assertNotNull(Validators.edadCoincideConFecha("25", fecha, hoy))
     }
 
     @Test
