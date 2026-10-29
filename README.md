@@ -7,7 +7,7 @@ Proyecto de la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles** (D
 ## Integrantes
 
 - Alejandro Cuitiño
-- Joaquín Álvarez
+- Maximiliano Córdova
 
 ## Funcionalidades implementadas
 
