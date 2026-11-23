@@ -55,9 +55,15 @@ import cl.duoc.corpaliv.viewmodel.InteresViewModel
 fun InteresScreen(
     onBack: () -> Unit,
     onEnviada: () -> Unit,
+    // Tipo ya elegido en Colaborar (null si se entra desde Mis solicitudes)
+    tipoInicial: TipoColaboracion? = null,
     viewModel: InteresViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(tipoInicial) {
+        if (tipoInicial != null && state.tipo == null) viewModel.onTipoChange(tipoInicial)
+    }
 
     LaunchedEffect(state.enviada) {
         if (state.enviada) onEnviada()

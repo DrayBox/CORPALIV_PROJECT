@@ -8,7 +8,11 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
+import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import cl.duoc.corpaliv.data.model.TipoColaboracion
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -80,7 +84,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable(Routes.PROGRAMAS) { ProgramasScreen() }
         composable(Routes.CATALOGO) { CatalogoScreen() }
         composable(Routes.COLABORAR) {
-            ColaborarScreen(onGoToInteres = { navController.navigate(Routes.INTERES) })
+            ColaborarScreen(onGoToInteres = { tipo -> navController.navigate(Routes.interes(tipo)) })
         }
         composable(Routes.PERFIL) {
             PerfilScreen(
@@ -94,8 +98,13 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             )
         }
 
-        pantallaSecundaria(Routes.INTERES) {
+        pantallaSecundaria(
+            Routes.INTERES_CON_TIPO,
+            arguments = listOf(navArgument(Routes.ARG_TIPO) { type = NavType.StringType; nullable = true; defaultValue = null })
+        ) { entry ->
             InteresScreen(
+                tipoInicial = entry.arguments?.getString(Routes.ARG_TIPO)
+                    ?.let { nombre -> TipoColaboracion.entries.firstOrNull { it.name == nombre } },
                 onBack = { navController.popBackStack() },
                 onEnviada = {
                     // Se cierra el formulario y se muestra la lista. Si se llegó
@@ -129,11 +138,13 @@ fun NavHostController.navigateToSection(route: String) {
 // y al volver salen hacia la derecha, para que se entienda la jerarquía.
 private fun NavGraphBuilder.pantallaSecundaria(
     route: String,
+    arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit
 ) {
     val deslizar = tween<IntOffset>(Duracion.MEDIA)
     composable(
         route = route,
+        arguments = arguments,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, deslizar) },
         exitTransition = { fadeOut(tween(Duracion.CORTA)) },
         popEnterTransition = { fadeIn(tween(Duracion.MEDIA)) },

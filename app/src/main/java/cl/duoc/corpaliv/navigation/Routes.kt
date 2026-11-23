@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.ui.graphics.vector.ImageVector
+import cl.duoc.corpaliv.data.model.TipoColaboracion
 
 // Nombres de las rutas en un solo lugar, para no repetir strings sueltos
 object Routes {
@@ -28,6 +29,10 @@ object Routes {
 
     // Pantallas secundarias (se abren desde una sección)
     const val INTERES = "interes"
+    // El formulario puede abrirse con un tipo de colaboración ya elegido: "interes?tipo=DONACION"
+    const val ARG_TIPO = "tipo"
+    const val INTERES_CON_TIPO = "$INTERES?$ARG_TIPO={$ARG_TIPO}"
+    fun interes(tipo: TipoColaboracion) = "$INTERES?$ARG_TIPO=${tipo.name}"
     const val SOLICITUDES = "solicitudes"
     const val SEDES = "sedes"
 }

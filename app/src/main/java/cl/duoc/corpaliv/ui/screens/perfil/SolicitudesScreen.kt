@@ -17,12 +17,7 @@ import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.Handshake
 import androidx.compose.material.icons.outlined.Payments
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Storefront
-import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.corpaliv.data.model.Solicitud
-import cl.duoc.corpaliv.data.model.TipoColaboracion
+import cl.duoc.corpaliv.ui.util.icono
 import cl.duoc.corpaliv.ui.components.PlaceholderAction
 import cl.duoc.corpaliv.ui.components.PlaceholderScreen
 import cl.duoc.corpaliv.ui.util.formatoFecha
@@ -182,12 +177,4 @@ private fun DatoConIcono(icono: ImageVector, texto: String) {
         Icon(icono, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(texto, style = MaterialTheme.typography.bodyMedium)
     }
-}
-
-private fun TipoColaboracion.icono(): ImageVector = when (this) {
-    TipoColaboracion.DONACION -> Icons.Outlined.VolunteerActivism
-    TipoColaboracion.ALIANZA -> Icons.Outlined.Handshake
-    TipoColaboracion.VOLUNTARIADO -> Icons.Outlined.Groups
-    TipoColaboracion.COMPRA_PRODUCTOS -> Icons.Outlined.Storefront
-    TipoColaboracion.CAPACITACION -> Icons.Outlined.School
 }
