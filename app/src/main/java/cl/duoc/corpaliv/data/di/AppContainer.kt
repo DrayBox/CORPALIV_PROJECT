@@ -4,9 +4,11 @@ import android.content.Context
 import cl.duoc.corpaliv.BuildConfig
 import cl.duoc.corpaliv.data.local.CorpalivDatabase
 import cl.duoc.corpaliv.data.location.LocationProvider
+import cl.duoc.corpaliv.data.remote.ContenidoApiService
 import cl.duoc.corpaliv.data.remote.MindicadorApiService
 import cl.duoc.corpaliv.data.remote.RetrofitClient
 import cl.duoc.corpaliv.data.remote.SolicitudApiService
+import cl.duoc.corpaliv.data.repository.ContenidoRepository
 import cl.duoc.corpaliv.data.repository.IndicadorRepository
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository
@@ -32,6 +34,10 @@ class AppContainer(context: Context) {
             dao = database.solicitudDao(),
             idRemoto = { usuarioId -> "${session.idInstalacion()}-$usuarioId" }
         )
+    }
+
+    val contenidoRepository: ContenidoRepository by lazy {
+        ContenidoRepository(RetrofitClient.crear(BuildConfig.URL_CONTENIDO).create(ContenidoApiService::class.java))
     }
 
     // API externa: UF y dólar del día

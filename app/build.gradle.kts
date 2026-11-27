@@ -19,7 +19,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // ms-solicitudes corriendo en el computador. 10.0.2.2 es el computador visto desde el emulador.
+        // Microservicios corriendo en el computador. 10.0.2.2 es el computador visto desde el emulador.
+        buildConfigField("String", "URL_CONTENIDO", "\"http://10.0.2.2:8081/\"")
         buildConfigField("String", "URL_SOLICITUDES", "\"http://10.0.2.2:8082/\"")
     }
 

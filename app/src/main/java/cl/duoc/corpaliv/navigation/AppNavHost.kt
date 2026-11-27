@@ -82,7 +82,10 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             )
         }
         composable(Routes.PROGRAMAS) { ProgramasScreen() }
-        composable(Routes.CATALOGO) { CatalogoScreen() }
+        composable(Routes.CATALOGO) {
+            // "Lo quiero" abre el formulario con Compra de productos ya elegida
+            CatalogoScreen(onComprar = { navController.navigate(Routes.interes(TipoColaboracion.COMPRA_PRODUCTOS)) })
+        }
         composable(Routes.COLABORAR) {
             ColaborarScreen(onGoToInteres = { tipo -> navController.navigate(Routes.interes(tipo)) })
         }

@@ -23,6 +23,8 @@ object AppViewModelProvider {
         initializer { PerfilViewModel(container().usuarioRepository, container().fotoPerfilStorage) }
         initializer { InteresViewModel(container().usuarioRepository, container().solicitudRepository, container().indicadorRepository) }
         initializer { SedesViewModel(container().locationProvider) }
+        initializer { ProgramasViewModel(container().contenidoRepository) }
+        initializer { CatalogoViewModel(container().contenidoRepository) }
         initializer { SolicitudesViewModel(container().usuarioRepository, container().solicitudRepository) }
     }
 }
