@@ -19,3 +19,6 @@ local.properties
 
 # Credenciales de la base de datos (cada uno tiene su propio .env)
 /backend/.env
+
+# Claves de la firma del APK (el .jks sí se sube, sus claves no)
+keystore.properties

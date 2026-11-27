@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -25,11 +27,29 @@ android {
         buildConfigField("String", "URL_SOLICITUDES", "\"http://10.0.2.2:8082/\"")
     }
 
+    // Firma del APK release. Las claves se leen de keystore.properties (en la raíz del proyecto),
+    // que no se sube a GitHub. Ver keystore.properties.example.
+    val firma = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { archivo ->
+        Properties().apply { archivo.inputStream().use { load(it) } }
+    }
+    signingConfigs {
+        if (firma != null) {
+            create("release") {
+                storeFile = rootProject.file(firma.getProperty("storeFile"))
+                storePassword = firma.getProperty("storePassword")
+                keyAlias = firma.getProperty("keyAlias")
+                keyPassword = firma.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (firma != null) signingConfig = signingConfigs.getByName("release")
+            // Sin R8: la optimización parcial que traía la plantilla cerraba la app al abrirla
+            // (IllegalAccessError en clases de Kotlin). Para este MVP se prioriza que funcione.
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }
