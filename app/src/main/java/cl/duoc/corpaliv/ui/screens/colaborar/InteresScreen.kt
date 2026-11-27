@@ -45,6 +45,7 @@ import cl.duoc.corpaliv.ui.components.CorpalivTextField
 import cl.duoc.corpaliv.ui.components.DateField
 import cl.duoc.corpaliv.ui.components.ErrorBanner
 import cl.duoc.corpaliv.ui.components.FieldErrorText
+import cl.duoc.corpaliv.ui.components.PermisoRedLocal
 import cl.duoc.corpaliv.ui.components.shakeOnError
 import cl.duoc.corpaliv.ui.util.formatoMonto
 import cl.duoc.corpaliv.viewmodel.AppViewModelProvider
@@ -57,9 +58,15 @@ fun InteresScreen(
     onEnviada: () -> Unit,
     // Tipo ya elegido en Colaborar (null si se entra desde Mis solicitudes)
     tipoInicial: TipoColaboracion? = null,
+    // Id de la solicitud a editar (null = solicitud nueva)
+    solicitudId: Long? = null,
     viewModel: InteresViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(solicitudId) {
+        if (solicitudId != null) viewModel.cargar(solicitudId)
+    }
 
     LaunchedEffect(tipoInicial) {
         if (tipoInicial != null && state.tipo == null) viewModel.onTipoChange(tipoInicial)
@@ -71,7 +78,7 @@ fun InteresScreen(
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Solicitud de interés") },
+            title = { Text(if (state.editandoId == null) "Solicitud de interés" else "Editar solicitud") },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -152,6 +159,7 @@ fun InteresScreen(
                 supportingHint = "${state.mensaje.trim().length}/${Validators.MENSAJE_MAX}"
             )
 
+            PermisoRedLocal()
             ErrorBanner(state.errorGeneral)
 
             Button(
@@ -166,7 +174,7 @@ fun InteresScreen(
                     CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
                 } else {
                     Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                    Text("Enviar solicitud", modifier = Modifier.padding(start = 8.dp))
+                    Text(if (state.editandoId == null) "Enviar solicitud" else "Guardar cambios", modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }

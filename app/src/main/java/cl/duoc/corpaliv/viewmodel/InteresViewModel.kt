@@ -2,6 +2,7 @@ package cl.duoc.corpaliv.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cl.duoc.corpaliv.data.repository.ErrorRemoto
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository
 import cl.duoc.corpaliv.data.model.Solicitud
@@ -26,6 +27,8 @@ data class InteresUiState(
     // Error al guardar (por ejemplo, la sesión expiró)
     val errorGeneral: String? = null,
     val enviando: Boolean = false,
+    // Id de la solicitud que se edita; null = solicitud nueva
+    val editandoId: Long? = null,
     // Sube en cada envío fallido: la UI lo usa para animar (shake)
     val intentoFallido: Int = 0,
     val enviada: Boolean = false
@@ -41,6 +44,21 @@ class InteresViewModel(
 
     private val _uiState = MutableStateFlow(InteresUiState())
     val uiState: StateFlow<InteresUiState> = _uiState.asStateFlow()
+
+    // Llena el formulario con una solicitud guardada para editarla
+    fun cargar(id: Long) {
+        if (_uiState.value.editandoId == id) return
+        viewModelScope.launch {
+            val solicitud = solicitudRepository.buscar(id) ?: return@launch
+            _uiState.value = InteresUiState(
+                tipo = solicitud.tipo,
+                monto = solicitud.monto?.toString().orEmpty(),
+                fechaContacto = solicitud.fechaContacto,
+                mensaje = solicitud.mensaje,
+                editandoId = solicitud.id
+            )
+        }
+    }
 
     fun onTipoChange(tipo: TipoColaboracion) = _uiState.update {
         it.copy(
@@ -97,16 +115,32 @@ class InteresViewModel(
                 _uiState.update { it.copy(enviando = false, errorGeneral = "Tu sesión expiró. Vuelve a iniciar sesión.") }
                 return@launch
             }
-            solicitudRepository.guardar(
-                Solicitud(
-                    usuarioId = usuarioId,
-                    tipo = requireNotNull(estado.tipo),
-                    monto = estado.monto.toIntOrNull(),
-                    fechaContacto = requireNotNull(estado.fechaContacto),
-                    mensaje = estado.mensaje.trim()
-                )
+            val solicitud = Solicitud(
+                id = estado.editandoId ?: 0,
+                usuarioId = usuarioId,
+                tipo = requireNotNull(estado.tipo),
+                monto = estado.monto.toIntOrNull(),
+                fechaContacto = requireNotNull(estado.fechaContacto),
+                mensaje = estado.mensaje.trim()
             )
-            _uiState.update { it.copy(enviando = false, enviada = true) }
+            try {
+                // Se envía al microservicio; si responde bien, queda también en Room
+                if (estado.editandoId == null) solicitudRepository.crear(solicitud) else solicitudRepository.actualizar(solicitud)
+                _uiState.update { it.copy(enviando = false, enviada = true) }
+            } catch (e: ErrorRemoto) {
+                // Si el microservicio rechazó un campo, el error se muestra bajo ese campo
+                _uiState.update {
+                    it.copy(
+                        enviando = false,
+                        errorGeneral = e.message,
+                        tipoError = e.errores["tipo"] ?: it.tipoError,
+                        montoError = e.errores["monto"] ?: it.montoError,
+                        fechaError = e.errores["fechaContacto"] ?: it.fechaError,
+                        mensajeError = e.errores["mensaje"] ?: it.mensajeError,
+                        intentoFallido = it.intentoFallido + 1
+                    )
+                }
+            }
         }
     }
 }

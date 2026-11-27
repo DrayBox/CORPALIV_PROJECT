@@ -31,8 +31,11 @@ object Routes {
     const val INTERES = "interes"
     // El formulario puede abrirse con un tipo de colaboración ya elegido: "interes?tipo=DONACION"
     const val ARG_TIPO = "tipo"
-    const val INTERES_CON_TIPO = "$INTERES?$ARG_TIPO={$ARG_TIPO}"
+    // ...o con una solicitud guardada para editarla: "interes?id=5"
+    const val ARG_ID = "id"
+    const val INTERES_CON_ARGS = "$INTERES?$ARG_TIPO={$ARG_TIPO}&$ARG_ID={$ARG_ID}"
     fun interes(tipo: TipoColaboracion) = "$INTERES?$ARG_TIPO=${tipo.name}"
+    fun editarSolicitud(id: Long) = "$INTERES?$ARG_ID=$id"
     const val SOLICITUDES = "solicitudes"
     const val SEDES = "sedes"
 }

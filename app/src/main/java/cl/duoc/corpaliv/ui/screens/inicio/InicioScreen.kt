@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import cl.duoc.corpaliv.ui.components.Duracion
+import cl.duoc.corpaliv.ui.util.formatoNumero
 
 // Cifras de ejemplo para el MVP: no son datos reales de la organización
 private data class Indicador(val valor: Int, val texto: String, val icono: ImageVector)
@@ -107,7 +108,7 @@ private fun TarjetaIndicador(indicador: Indicador, mostrar: Boolean, modifier: M
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Icon(indicador.icono, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
             Text(
-                "%,d".format(valor).replace(',', '.'),
+                formatoNumero(valor),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )

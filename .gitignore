@@ -16,3 +16,6 @@ local.properties
 
 # Grafo de Graphify (herramienta personal de navegación del código)
 /graphify-out
+
+# Credenciales de la base de datos (cada uno tiene su propio .env)
+/backend/*/.env

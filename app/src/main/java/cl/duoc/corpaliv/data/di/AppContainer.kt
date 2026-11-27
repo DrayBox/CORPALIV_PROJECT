@@ -1,8 +1,11 @@
 package cl.duoc.corpaliv.data.di
 
 import android.content.Context
+import cl.duoc.corpaliv.BuildConfig
 import cl.duoc.corpaliv.data.local.CorpalivDatabase
 import cl.duoc.corpaliv.data.location.LocationProvider
+import cl.duoc.corpaliv.data.remote.RetrofitClient
+import cl.duoc.corpaliv.data.remote.SolicitudApiService
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository
 import cl.duoc.corpaliv.data.session.SessionDataStore
@@ -22,7 +25,11 @@ class AppContainer(context: Context) {
     }
 
     val solicitudRepository: SolicitudRepository by lazy {
-        SolicitudRepository(database.solicitudDao())
+        SolicitudRepository(
+            api = RetrofitClient.crear(BuildConfig.URL_SOLICITUDES).create(SolicitudApiService::class.java),
+            dao = database.solicitudDao(),
+            idRemoto = { usuarioId -> "${session.idInstalacion()}-$usuarioId" }
+        )
     }
 
     val fotoPerfilStorage: FotoPerfilStorage by lazy { FotoPerfilStorage(appContext) }

@@ -11,9 +11,11 @@ import java.util.Locale
 private val LOCALE_CL: Locale = Locale.forLanguageTag("es-CL")
 private val FORMATO_FECHA: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", LOCALE_CL)
 
+// 15000 -> "15.000"
+fun formatoNumero(numero: Int): String = NumberFormat.getIntegerInstance(LOCALE_CL).format(numero)
+
 // 15000 -> "$15.000"
-fun formatoMonto(monto: Int): String =
-    "$" + NumberFormat.getIntegerInstance(LOCALE_CL).format(monto)
+fun formatoMonto(monto: Int): String = "$" + formatoNumero(monto)
 
 fun formatoFecha(fecha: LocalDate): String = fecha.format(FORMATO_FECHA)
 

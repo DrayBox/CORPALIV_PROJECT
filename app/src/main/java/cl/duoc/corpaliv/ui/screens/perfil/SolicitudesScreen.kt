@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ListAlt
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material3.AlertDialog
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,28 +41,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.corpaliv.data.model.Solicitud
 import cl.duoc.corpaliv.ui.util.icono
+import cl.duoc.corpaliv.ui.components.ErrorBanner
+import cl.duoc.corpaliv.ui.components.PermisoRedLocal
 import cl.duoc.corpaliv.ui.components.PlaceholderAction
 import cl.duoc.corpaliv.ui.components.PlaceholderScreen
 import cl.duoc.corpaliv.ui.util.formatoFecha
 import cl.duoc.corpaliv.ui.util.formatoMonto
 import cl.duoc.corpaliv.viewmodel.AppViewModelProvider
-import cl.duoc.corpaliv.viewmodel.SolicitudesUiState
 import cl.duoc.corpaliv.viewmodel.SolicitudesViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolicitudesScreen(
     onBack: () -> Unit,
     onNuevaSolicitud: () -> Unit,
+    onEditar: (Long) -> Unit,
     viewModel: SolicitudesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Id de la solicitud que se quiere eliminar (abre el diálogo de confirmación)
     var porEliminar by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Mientras la pantalla está visible, consulta el microservicio cada 5 segundos.
+    // Se detiene sola al salir de la pantalla o pasar la app a segundo plano.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                viewModel.sincronizar()
+                delay(INTERVALO_ACTUALIZACION_MS)
+            }
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
@@ -73,29 +93,35 @@ fun SolicitudesScreen(
             windowInsets = WindowInsets(0.dp)
         )
 
-        when (val s = state) {
-            SolicitudesUiState.Cargando -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        PermisoRedLocal(modifier = Modifier.padding(horizontal = 16.dp))
+        ErrorBanner(state.error, modifier = Modifier.padding(horizontal = 16.dp))
+
+        when {
+            state.cargando && state.solicitudes.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
 
-            is SolicitudesUiState.Listo -> if (s.solicitudes.isEmpty()) {
+            state.solicitudes.isEmpty() -> {
                 PlaceholderScreen(
                     title = "Aún no tienes solicitudes",
                     description = "Cuando envíes una solicitud de interés, la verás aquí.",
                     icon = Icons.AutoMirrored.Outlined.ListAlt,
                     actions = listOf(PlaceholderAction("Enviar una solicitud", onNuevaSolicitud))
                 )
-            } else {
+            }
+
+            else -> {
                 Box(Modifier.fillMaxSize()) {
                     LazyColumn(
                         // Espacio abajo para que el botón flotante no tape la última tarjeta
                         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(s.solicitudes, key = { it.id }) { solicitud ->
+                        items(state.solicitudes, key = { it.id }) { solicitud ->
                             // animateItem: al eliminar, las demás tarjetas suben animadas
                             SolicitudCard(
                                 solicitud,
+                                onEditar = { onEditar(solicitud.id) },
                                 onEliminar = { porEliminar = solicitud.id },
                                 modifier = Modifier.animateItem()
                             )
@@ -134,7 +160,12 @@ fun SolicitudesScreen(
 }
 
 @Composable
-private fun SolicitudCard(solicitud: Solicitud, onEliminar: () -> Unit, modifier: Modifier = Modifier) {
+private fun SolicitudCard(
+    solicitud: Solicitud,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -150,6 +181,9 @@ private fun SolicitudCard(solicitud: Solicitud, onEliminar: () -> Unit, modifier
                         .weight(1f)
                         .padding(start = 12.dp)
                 )
+                IconButton(onClick = onEditar) {
+                    Icon(Icons.Outlined.Edit, contentDescription = "Editar solicitud de ${solicitud.tipo.etiqueta}")
+                }
                 IconButton(onClick = onEliminar) {
                     Icon(Icons.Outlined.Delete, contentDescription = "Eliminar solicitud de ${solicitud.tipo.etiqueta}")
                 }
@@ -170,6 +204,8 @@ private fun SolicitudCard(solicitud: Solicitud, onEliminar: () -> Unit, modifier
         }
     }
 }
+
+private const val INTERVALO_ACTUALIZACION_MS = 5_000L
 
 @Composable
 private fun DatoConIcono(icono: ImageVector, texto: String) {

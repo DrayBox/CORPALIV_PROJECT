@@ -99,12 +99,17 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         }
 
         pantallaSecundaria(
-            Routes.INTERES_CON_TIPO,
-            arguments = listOf(navArgument(Routes.ARG_TIPO) { type = NavType.StringType; nullable = true; defaultValue = null })
+            Routes.INTERES_CON_ARGS,
+            arguments = listOf(
+                navArgument(Routes.ARG_TIPO) { type = NavType.StringType; nullable = true; defaultValue = null },
+                // Long no admite null: -1 significa "solicitud nueva"
+                navArgument(Routes.ARG_ID) { type = NavType.LongType; defaultValue = -1L }
+            )
         ) { entry ->
             InteresScreen(
                 tipoInicial = entry.arguments?.getString(Routes.ARG_TIPO)
                     ?.let { nombre -> TipoColaboracion.entries.firstOrNull { it.name == nombre } },
+                solicitudId = entry.arguments?.getLong(Routes.ARG_ID)?.takeIf { it > 0 },
                 onBack = { navController.popBackStack() },
                 onEnviada = {
                     // Se cierra el formulario y se muestra la lista. Si se llegó
@@ -117,7 +122,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         pantallaSecundaria(Routes.SOLICITUDES) {
             SolicitudesScreen(
                 onBack = { navController.popBackStack() },
-                onNuevaSolicitud = { navController.navigate(Routes.INTERES) }
+                onNuevaSolicitud = { navController.navigate(Routes.INTERES) },
+                onEditar = { id -> navController.navigate(Routes.editarSolicitud(id)) }
             )
         }
         pantallaSecundaria(Routes.SEDES) { SedesScreen(onBack = { navController.popBackStack() }) }
