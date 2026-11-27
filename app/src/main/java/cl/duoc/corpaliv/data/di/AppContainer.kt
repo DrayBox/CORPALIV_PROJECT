@@ -4,8 +4,10 @@ import android.content.Context
 import cl.duoc.corpaliv.BuildConfig
 import cl.duoc.corpaliv.data.local.CorpalivDatabase
 import cl.duoc.corpaliv.data.location.LocationProvider
+import cl.duoc.corpaliv.data.remote.MindicadorApiService
 import cl.duoc.corpaliv.data.remote.RetrofitClient
 import cl.duoc.corpaliv.data.remote.SolicitudApiService
+import cl.duoc.corpaliv.data.repository.IndicadorRepository
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository
 import cl.duoc.corpaliv.data.session.SessionDataStore
@@ -32,7 +34,16 @@ class AppContainer(context: Context) {
         )
     }
 
+    // API externa: UF y dólar del día
+    val indicadorRepository: IndicadorRepository by lazy {
+        IndicadorRepository(RetrofitClient.crear(URL_MINDICADOR).create(MindicadorApiService::class.java))
+    }
+
     val fotoPerfilStorage: FotoPerfilStorage by lazy { FotoPerfilStorage(appContext) }
 
     val locationProvider: LocationProvider by lazy { LocationProvider(appContext) }
+
+    private companion object {
+        const val URL_MINDICADOR = "https://mindicador.cl/"
+    }
 }

@@ -3,10 +3,12 @@ package cl.duoc.corpaliv.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.corpaliv.data.repository.ErrorRemoto
+import cl.duoc.corpaliv.data.repository.IndicadorRepository
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository
 import cl.duoc.corpaliv.data.model.Solicitud
 import cl.duoc.corpaliv.data.model.TipoColaboracion
+import cl.duoc.corpaliv.domain.conversion.Indicadores
 import cl.duoc.corpaliv.domain.validation.Validators
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +31,8 @@ data class InteresUiState(
     val enviando: Boolean = false,
     // Id de la solicitud que se edita; null = solicitud nueva
     val editandoId: Long? = null,
+    // UF y dólar de mindicador.cl para mostrar la equivalencia del monto (null si no cargaron)
+    val indicadores: Indicadores? = null,
     // Sube en cada envío fallido: la UI lo usa para animar (shake)
     val intentoFallido: Int = 0,
     val enviada: Boolean = false
@@ -39,11 +43,19 @@ data class InteresUiState(
 
 class InteresViewModel(
     private val usuarioRepository: UsuarioRepository,
-    private val solicitudRepository: SolicitudRepository
+    private val solicitudRepository: SolicitudRepository,
+    private val indicadorRepository: IndicadorRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InteresUiState())
     val uiState: StateFlow<InteresUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val indicadores = indicadorRepository.obtener()
+            _uiState.update { it.copy(indicadores = indicadores) }
+        }
+    }
 
     // Llena el formulario con una solicitud guardada para editarla
     fun cargar(id: Long) {
@@ -51,6 +63,7 @@ class InteresViewModel(
         viewModelScope.launch {
             val solicitud = solicitudRepository.buscar(id) ?: return@launch
             _uiState.value = InteresUiState(
+                indicadores = _uiState.value.indicadores,
                 tipo = solicitud.tipo,
                 monto = solicitud.monto?.toString().orEmpty(),
                 fechaContacto = solicitud.fechaContacto,

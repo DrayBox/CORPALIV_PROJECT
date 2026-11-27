@@ -21,7 +21,7 @@ object AppViewModelProvider {
         initializer { LoginViewModel(container().usuarioRepository) }
         initializer { RegistroViewModel(container().usuarioRepository) }
         initializer { PerfilViewModel(container().usuarioRepository, container().fotoPerfilStorage) }
-        initializer { InteresViewModel(container().usuarioRepository, container().solicitudRepository) }
+        initializer { InteresViewModel(container().usuarioRepository, container().solicitudRepository, container().indicadorRepository) }
         initializer { SedesViewModel(container().locationProvider) }
         initializer { SolicitudesViewModel(container().usuarioRepository, container().solicitudRepository) }
     }

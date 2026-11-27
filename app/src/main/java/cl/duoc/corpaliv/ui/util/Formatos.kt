@@ -14,6 +14,13 @@ private val FORMATO_FECHA: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/M
 // 15000 -> "15.000"
 fun formatoNumero(numero: Int): String = NumberFormat.getIntegerInstance(LOCALE_CL).format(numero)
 
+// 1.8123 -> "1,81"
+fun formatoDecimal(numero: Double): String =
+    NumberFormat.getNumberInstance(LOCALE_CL).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
+    }.format(numero)
+
 // 15000 -> "$15.000"
 fun formatoMonto(monto: Int): String = "$" + formatoNumero(monto)
 

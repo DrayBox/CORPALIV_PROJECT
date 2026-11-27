@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.corpaliv.data.model.TipoColaboracion
+import cl.duoc.corpaliv.domain.conversion.equivalencia
 import cl.duoc.corpaliv.domain.validation.Validators
 import cl.duoc.corpaliv.ui.components.AparecerVertical
 import cl.duoc.corpaliv.ui.components.CorpalivTextField
@@ -47,6 +48,8 @@ import cl.duoc.corpaliv.ui.components.ErrorBanner
 import cl.duoc.corpaliv.ui.components.FieldErrorText
 import cl.duoc.corpaliv.ui.components.PermisoRedLocal
 import cl.duoc.corpaliv.ui.components.shakeOnError
+import cl.duoc.corpaliv.ui.util.formatoDecimal
+import cl.duoc.corpaliv.ui.util.formatoFecha
 import cl.duoc.corpaliv.ui.util.formatoMonto
 import cl.duoc.corpaliv.viewmodel.AppViewModelProvider
 import cl.duoc.corpaliv.viewmodel.InteresViewModel
@@ -123,6 +126,7 @@ fun InteresScreen(
 
             // El monto solo aparece (animado) para los tipos que lo usan
             AparecerVertical(visible = state.tipo?.usaMonto == true) {
+              Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 val obligatorio = state.tipo?.montoObligatorio != false
                 CorpalivTextField(
                     value = state.monto,
@@ -132,9 +136,24 @@ fun InteresScreen(
                     error = state.montoError,
                     keyboardType = KeyboardType.Number,
                     modifier = Modifier.shakeOnError(state.intentoFallido, state.montoError != null),
-                    supportingHint = state.monto.toIntOrNull()?.let { formatoMonto(it) }
-                        ?: "Entre ${formatoMonto(Validators.MONTO_MIN)} y ${formatoMonto(Validators.MONTO_MAX)}"
+                    supportingHint = state.monto.toIntOrNull()?.let { monto ->
+                        // Con los indicadores de mindicador.cl se muestra cuánto es en UF y dólares
+                        val equivalente = state.indicadores?.let { indicadores ->
+                            val eq = equivalencia(monto, indicadores)
+                            " ≈ ${formatoDecimal(eq.uf)} UF · US$ ${formatoDecimal(eq.dolares)}"
+                        }.orEmpty()
+                        formatoMonto(monto) + equivalente
+                    } ?: "Entre ${formatoMonto(Validators.MONTO_MIN)} y ${formatoMonto(Validators.MONTO_MAX)}"
                 )
+                state.indicadores?.let {
+                    Text(
+                        "UF y dólar del ${formatoFecha(it.fecha)} · fuente: mindicador.cl",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+              }
             }
 
             DateField(
