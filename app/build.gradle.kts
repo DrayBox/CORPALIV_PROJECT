@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -63,10 +64,37 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+// Cobertura de las pruebas unitarias: ./gradlew koverHtmlReportDebug
+// Se mide sobre la lógica (ViewModels, repositorios, dominio y capa remota), no sobre la interfaz.
+kover {
+    reports {
+        filters {
+            includes {
+                packages(
+                    "cl.duoc.corpaliv.viewmodel",
+                    "cl.duoc.corpaliv.data.repository",
+                    "cl.duoc.corpaliv.data.remote",
+                    "cl.duoc.corpaliv.domain"
+                )
+            }
+            excludes {
+                // Fábrica de ViewModels y armado de Retrofit: solo conectan piezas, sin lógica propia
+                classes("cl.duoc.corpaliv.viewmodel.AppViewModelProvider*", "cl.duoc.corpaliv.data.remote.RetrofitClient*")
+            }
+        }
+        variant("debug") {
+            verify {
+                rule { minBound(80) }
+            }
+        }
+    }
 }
