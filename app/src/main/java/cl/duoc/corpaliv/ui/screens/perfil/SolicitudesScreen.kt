@@ -31,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,13 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.corpaliv.data.model.Solicitud
 import cl.duoc.corpaliv.ui.util.icono
+import cl.duoc.corpaliv.ui.components.ActualizarMientrasVisible
 import cl.duoc.corpaliv.ui.components.ErrorBanner
 import cl.duoc.corpaliv.ui.components.PermisoRedLocal
 import cl.duoc.corpaliv.ui.components.PlaceholderAction
@@ -56,7 +53,6 @@ import cl.duoc.corpaliv.ui.util.formatoFecha
 import cl.duoc.corpaliv.ui.util.formatoMonto
 import cl.duoc.corpaliv.viewmodel.AppViewModelProvider
 import cl.duoc.corpaliv.viewmodel.SolicitudesViewModel
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,17 +66,8 @@ fun SolicitudesScreen(
     // Id de la solicitud que se quiere eliminar (abre el diálogo de confirmación)
     var porEliminar by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    // Mientras la pantalla está visible, consulta el microservicio cada 5 segundos.
-    // Se detiene sola al salir de la pantalla o pasar la app a segundo plano.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            while (true) {
-                viewModel.sincronizar()
-                delay(INTERVALO_ACTUALIZACION_MS)
-            }
-        }
-    }
+    // Mientras la pantalla está visible, consulta el microservicio cada 5 segundos
+    ActualizarMientrasVisible { viewModel.sincronizar() }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
@@ -204,8 +191,6 @@ private fun SolicitudCard(
         }
     }
 }
-
-private const val INTERVALO_ACTUALIZACION_MS = 5_000L
 
 @Composable
 private fun DatoConIcono(icono: ImageVector, texto: String) {

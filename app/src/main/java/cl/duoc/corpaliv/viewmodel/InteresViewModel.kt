@@ -2,7 +2,7 @@ package cl.duoc.corpaliv.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.corpaliv.data.repository.ErrorRemoto
+import cl.duoc.corpaliv.data.remote.ErrorRemoto
 import cl.duoc.corpaliv.data.repository.IndicadorRepository
 import cl.duoc.corpaliv.data.repository.SolicitudRepository
 import cl.duoc.corpaliv.data.repository.UsuarioRepository

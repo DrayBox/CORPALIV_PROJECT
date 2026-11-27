@@ -4,22 +4,13 @@ import cl.duoc.corpaliv.data.local.dao.SolicitudDao
 import cl.duoc.corpaliv.data.local.entity.toDomain
 import cl.duoc.corpaliv.data.local.entity.toEntity
 import cl.duoc.corpaliv.data.model.Solicitud
-import cl.duoc.corpaliv.data.remote.ErrorDto
 import cl.duoc.corpaliv.data.remote.SolicitudApiService
+import cl.duoc.corpaliv.data.remote.llamarMicroservicio
 import cl.duoc.corpaliv.data.remote.toDomain
 import cl.duoc.corpaliv.data.remote.toRequestDto
-import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import retrofit2.HttpException
-import java.io.IOException
-
-// Error al hablar con el microservicio, con un mensaje para mostrar en pantalla.
-// errores: mensajes por campo cuando el microservicio rechaza los datos (400).
-class ErrorRemoto(
-    override val message: String,
-    val errores: Map<String, String> = emptyMap()
-) : Exception(message)
 
 // ms-solicitudes es la fuente de verdad: cada cambio se envía primero al microservicio.
 // Room guarda una copia de lo que respondió, para que la pantalla se actualice sola
@@ -65,23 +56,5 @@ class SolicitudRepository(
         dao.eliminar(id)
     }
 
-    // Traduce los errores de red y HTTP a ErrorRemoto
-    private suspend fun <T> llamar(bloque: suspend () -> T): T = try {
-        bloque()
-    } catch (e: IOException) {
-        throw ErrorRemoto("No se pudo conectar con el servidor. Revisa que ms-solicitudes esté encendido.")
-    } catch (e: HttpException) {
-        val error = leerError(e)
-        throw when (e.code()) {
-            400 -> ErrorRemoto(error?.mensaje ?: "Revisa los datos", error?.errores.orEmpty())
-            404 -> ErrorRemoto("La solicitud ya no existe")
-            else -> ErrorRemoto("El servidor respondió con un error (${e.code()})")
-        }
-    }
-
-    private fun leerError(e: HttpException): ErrorDto? = try {
-        e.response()?.errorBody()?.string()?.let { Gson().fromJson(it, ErrorDto::class.java) }
-    } catch (_: Exception) {
-        null
-    }
+    private suspend fun <T> llamar(bloque: suspend () -> T): T = llamarMicroservicio("ms-solicitudes", bloque)
 }
