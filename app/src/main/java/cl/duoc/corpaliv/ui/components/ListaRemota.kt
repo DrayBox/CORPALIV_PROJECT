@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,11 +48,16 @@ fun <T> ListaRemota(
                 description = "Volveremos a intentarlo en unos segundos.",
                 icon = Icons.Outlined.CloudOff
             )
-            else -> LazyColumn(
+            else -> {
+              val listState = rememberLazyListState()
+              MostrarNuevosArriba(listState, state.items.firstOrNull()?.let(clave))
+              LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.items, key = clave) { item(it) }
+              }
             }
         }
     }

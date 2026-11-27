@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ListAlt
@@ -46,6 +47,7 @@ import cl.duoc.corpaliv.data.model.Solicitud
 import cl.duoc.corpaliv.ui.util.icono
 import cl.duoc.corpaliv.ui.components.ActualizarMientrasVisible
 import cl.duoc.corpaliv.ui.components.ErrorBanner
+import cl.duoc.corpaliv.ui.components.MostrarNuevosArriba
 import cl.duoc.corpaliv.ui.components.PermisoRedLocal
 import cl.duoc.corpaliv.ui.components.PlaceholderAction
 import cl.duoc.corpaliv.ui.components.PlaceholderScreen
@@ -99,7 +101,10 @@ fun SolicitudesScreen(
 
             else -> {
                 Box(Modifier.fillMaxSize()) {
+                    val listState = rememberLazyListState()
+                    MostrarNuevosArriba(listState, state.solicitudes.firstOrNull()?.id)
                     LazyColumn(
+                        state = listState,
                         // Espacio abajo para que el botón flotante no tape la última tarjeta
                         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
